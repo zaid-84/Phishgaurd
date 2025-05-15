@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Link Detector</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <script>
+        function showLoading() {
+            document.getElementById("result").innerHTML = "🔍 Analyzing... Please wait.";
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">PhishGuard</div>
+            <ul class="nav-links">
+                <li><a href="index" class="active">Home</a></li>
+                <li><a href="about">About</a></li>
+                <li><a href="contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Protect Yourself From Phishing Attacks</h1>
+        <p>Our advanced AI tool analyzes URLs to detect potential phishing threats</p>
+    </div>
+
+    <div class="container">
+        <h2>Phishing Link Detector</h2>
+        <p>Enter any suspicious URL below to check if it's safe or potentially malicious.</p>
+
+        <!-- Form for URL input -->
+        <form action="/predict" method="POST" onsubmit="showLoading()">
+            <div class="input-group">
+                <input type="text" name="url" placeholder="Enter URL here..." required>
+                <button type="submit">Check URL</button>
+            </div>
+        </form>
+
+        <!-- Display the prediction result -->
+        {% if prediction_text %}
+        <div class="result-box" id="result">{{ prediction_text }}</div>
+        {% else %}
+        <div class="result-box" id="result"></div>
+        {% endif %}
+
+        <!-- Display the screenshot if available -->
+        {% if screenshot_path %}
+        <div class="screenshot-container">
+            <h3>Website Screenshot:</h3>
+            <img src="{{ screenshot_path }}" alt="Screenshot of URL" class="screenshot">
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">🔒</div>
+            <h3>Advanced Detection</h3>
+            <p>Our machine learning algorithm analyzes multiple factors to identify phishing attempts</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast Results</h3>
+            <p>Get instant analysis of any URL you're unsure about</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">🛡️</div>
+            <h3>Stay Protected</h3>
+            <p>Avoid identity theft and financial fraud by checking links before you click</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 PhishGuard - Phishing Link Detector. All rights reserved.</p>
+    </footer>
+</body>
+</html>
