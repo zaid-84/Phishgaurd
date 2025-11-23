@@ -131,19 +131,149 @@
 
 # if __name__ == "__main__":
 #     app.run(debug=True)
-from flask import Flask, render_template, request, send_file
+# from flask import Flask, render_template, request, send_file
+# import pickle
+# import numpy as np
+# from urllib.parse import urlparse
+# import re
+# import tld
+# from sklearn.preprocessing import StandardScaler
+# import os
+# from selenium.webdriver.chrome.options import Options
+# from selenium import webdriver
+# from selenium.webdriver.chrome.service import Service
+
+# import time
+
+# # Initialize Flask app
+# app = Flask(__name__)
+
+# # Load trained model and scaler
+# with open("phishing_model.pkl", "rb") as model_file:
+#     model = pickle.load(model_file)
+# with open("phishing_scaler.pkl", "rb") as scaler_file:
+#     scaler = pickle.load(scaler_file)
+
+# # Set path for ChromeDriver
+# CHROMEDRIVER_PATH = "chromedriver.exe"  
+
+# def extract_features(url):
+#     """Extract 16 numerical features from URLs."""
+#     features = {
+#         'length': len(url),
+#         'num_dots': url.count('.'),
+#         'num_slashes': url.count('/'),
+#         'num_digits': sum(c.isdigit() for c in url),
+#         'num_special_chars': len(re.findall(r'[^a-zA-Z0-9.]', url)),
+#         'has_https': int(url.startswith('https')),
+#         'has_http': int(url.startswith('http')),
+#         'has_at': int('@' in url),
+#         'has_double_slash': int('//' in url[7:]),
+#         'domain_length': len(urlparse(url).netloc),
+#         'path_length': len(urlparse(url).path),
+#         'num_subdomains': len(urlparse(url).netloc.split('.')) - 1,
+#         'tld_length': 0,
+#         'is_common_tld': 0,
+#         'has_query': int(bool(urlparse(url).query)),
+#         'num_params': len(urlparse(url).query.split('&')) if urlparse(url).query else 0
+#     }
+
+#     # Extract TLD features
+#     try:
+#         res = tld.get_tld(url, as_object=True)
+#         features['tld_length'] = len(res.tld)
+#         features['is_common_tld'] = int(res.tld in {'com', 'org', 'net', 'edu', 'gov'})
+#     except:
+#         pass
+
+#     # Return as list
+#     return [features[f] for f in features]
+
+# def capture_screenshot(url):
+#     """Visit URL and take a screenshot using Selenium."""
+#     try:
+#         options = Options()
+#         options.headless = True  # Run Chrome in headless mode (no UI)
+#         service = Service(CHROMEDRIVER_PATH)
+#         driver = webdriver.Chrome(service=service, options=options)
+
+#         driver.set_window_size(1280, 720)  # Set window size
+#         driver.get(url)  # Visit the URL
+#         time.sleep(3)  # Wait for page to load
+
+#         screenshot_path = f"static/screenshots/screenshot.png"
+#         driver.save_screenshot(screenshot_path)
+#         driver.quit()
+        
+#         return screenshot_path
+#     except Exception as e:
+#         print(f"Error capturing screenshot: {e}")
+#         return None
+
+# @app.route('/')
+# def home():
+#     return render_template('index.html')
+# @app.route('/index')
+# def index():
+#     return render_template('index.html')
+# @app.route('/contact')
+# def conatct():
+#     return render_template('contact.html')
+# @app.route('/about')
+# def about():
+#     return render_template('about.html')
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     if request.method == 'POST':
+#         url = request.form.get('url', '').strip()
+
+#         if not url:
+#             return render_template('index.html', prediction_text="⚠️ Please enter a URL!")
+
+#         try:
+#             # Extract features and scale them
+#             features = extract_features(url)
+#             features_scaled = scaler.transform([features])
+
+#             # Make prediction
+#             prediction = model.predict(features_scaled)[0]
+
+#             # Determine result
+#             if prediction == 1:
+#                 result = "✅ This URL appears to be safe!"
+#             else:
+#                 result = "⚠️ Warning: This URL may be a phishing attempt!"
+
+#             # Capture screenshot
+#             screenshot_path = capture_screenshot(url)
+
+#             return render_template('index.html', 
+#                                    prediction_text=result, 
+#                                    analyzed_url=url,
+#                                    screenshot_path=screenshot_path)
+            
+#         except Exception as e:
+#             return render_template('index.html', prediction_text=f"❌ Error analyzing URL: {e}")
+
+# if __name__ == "__main__":
+#     # os.makedirs("static/screenshots", exist_ok=True)  # Create screenshot folder
+#     app.run(debug=True)
+from flask import Flask, render_template, request
 import pickle
 import numpy as np
 from urllib.parse import urlparse
 import re
 import tld
+import socket
 from sklearn.preprocessing import StandardScaler
 import os
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-
+from webdriver_manager.chrome import ChromeDriverManager
 import time
+import requests
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -153,9 +283,6 @@ with open("phishing_model.pkl", "rb") as model_file:
     model = pickle.load(model_file)
 with open("phishing_scaler.pkl", "rb") as scaler_file:
     scaler = pickle.load(scaler_file)
-
-# Set path for ChromeDriver
-CHROMEDRIVER_PATH = "chromedriver.exe"  
 
 def extract_features(url):
     """Extract 16 numerical features from URLs."""
@@ -186,21 +313,48 @@ def extract_features(url):
     except:
         pass
 
-    # Return as list
     return [features[f] for f in features]
 
+def get_domain_ip_country(url):
+    """Extract domain, IP address, and origin country of the URL."""
+    try:
+        domain = urlparse(url).netloc
+        if domain.startswith("www."):
+            domain = domain[4:]
+
+        # Resolve IP
+        ip_address = socket.gethostbyname(domain)
+
+        # Lookup country using ipinfo.io
+        response = requests.get(f"https://ipinfo.io/{ip_address}/json")
+        if response.status_code == 200:
+            data = response.json()
+            country = data.get("country", "Unknown")
+        else:
+            country = "Unknown"
+
+        return domain, ip_address, country
+    except Exception as e:
+        print(f"Error resolving domain/IP: {e}")
+        return None, None, None
+
 def capture_screenshot(url):
-    """Visit URL and take a screenshot using Selenium."""
+    """Visit URL and take a screenshot using Selenium (headless)."""
     try:
         options = Options()
-        options.headless = True  # Run Chrome in headless mode (no UI)
-        service = Service(CHROMEDRIVER_PATH)
-        driver = webdriver.Chrome(service=service, options=options)
+        options.add_argument("--headless=new")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--ignore-ssl-errors")
 
-        driver.set_window_size(1280, 720)  # Set window size
-        driver.get(url)  # Visit the URL
-        time.sleep(3)  # Wait for page to load
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver.set_window_size(1280, 720)
+        driver.get(url)
+        time.sleep(3)
 
+        os.makedirs("static/screenshots", exist_ok=True)
         screenshot_path = f"static/screenshots/screenshot.png"
         driver.save_screenshot(screenshot_path)
         driver.quit()
@@ -213,12 +367,15 @@ def capture_screenshot(url):
 @app.route('/')
 def home():
     return render_template('index.html')
+
 @app.route('/index')
 def index():
     return render_template('index.html')
+
 @app.route('/contact')
-def conatct():
+def contact():
     return render_template('contact.html')
+
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -239,23 +396,29 @@ def predict():
             # Make prediction
             prediction = model.predict(features_scaled)[0]
 
-            # Determine result
+            # Determine result (Fix for returning 1 instead of text)
             if prediction == 1:
-                result = "✅ This URL appears to be safe!"
+                result = "✅ This URL appears to be SAFE!"
             else:
-                result = "⚠️ Warning: This URL may be a phishing attempt!"
+                result = "⚠️ WARNING: This URL may be a PHISHING attempt!"
+
+            # Get domain, IP, country
+            domain, ip_address, country = get_domain_ip_country(url)
 
             # Capture screenshot
             screenshot_path = capture_screenshot(url)
 
-            return render_template('index.html', 
-                                   prediction_text=result, 
-                                   analyzed_url=url,
-                                   screenshot_path=screenshot_path)
-            
+            return render_template(
+                "index.html",
+                prediction_text=result,
+                screenshot_path=screenshot_path,
+                url=url,
+                domain=domain,
+                ip=ip_address,
+                country=country
+            )
         except Exception as e:
             return render_template('index.html', prediction_text=f"❌ Error analyzing URL: {e}")
 
 if __name__ == "__main__":
-    # os.makedirs("static/screenshots", exist_ok=True)  # Create screenshot folder
     app.run(debug=True)

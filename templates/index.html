@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +9,8 @@
         function showLoading() {
             document.getElementById("result").innerHTML = "🔍 Analyzing... Please wait.";
         }
+
+       
     </script>
 </head>
 <body>
@@ -42,16 +43,33 @@
         </form>
 
         <!-- Display the prediction result -->
-        {% if prediction_text %}
-        <div class="result-box" id="result">{{ prediction_text }}</div>
-        {% else %}
-        <div class="result-box" id="result"></div>
+       {% if prediction_text %}
+<div class="result-box show" id="result">
+    <span class="result-badge">
+        {{ "🛡️ Safe" if "Safe" in prediction_text else "" }}
+    </span>
+    <p class="result-text">{{ prediction_text }}</p>
+</div>
+{% else %}
+<div class="result-box" id="result"></div>
+{% endif %}
+
+        <!-- Show domain and IP info -->
+        {% if domain or ip_address %}
+        <div class="info-box">
+            <h3>🔎 URL Details</h3>
+            <p><strong>URL:</strong> {{ url }}</p>
+            <p><strong>Domain:</strong> {{ domain }}</p>
+            <p><strong>IP Address:</strong> {{ ip }}</p>
+            <p><strong>Origin Country:</strong> {{ country }}</p>
+        </div>
+
         {% endif %}
 
         <!-- Display the screenshot if available -->
         {% if screenshot_path %}
         <div class="screenshot-container">
-            <h3>Website Screenshot:</h3>
+            <h3>🌐 Website Screenshot</h3>
             <img src="{{ screenshot_path }}" alt="Screenshot of URL" class="screenshot">
         </div>
         {% endif %}

@@ -66,7 +66,7 @@ nav ul li a:hover {
     background-color: #0055aa;
 } */
 /* General Page Styling */
-body {
+/* body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -548,4 +548,86 @@ footer {
     .contact-methods {
         flex-direction: column;
     }
+} 
+/* Info Box for Domain & IP */
+.info-box {
+    margin: 25px 0;
+    padding: 20px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.info-box h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.info-box p {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.info-box strong {
+    color: #2c3e50;
+}
+
+.result-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 18px;
+    text-align: center;
+    background: #f8f9fb;
+    border: 2px solid transparent;
+
+    /* Animation */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+}
+
+/* When result appears */
+.result-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Result Text */
+.result-text {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #2d2d2d;
+}
+
+/* Badge for Safe / Phishing */
+.result-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 50px;
+    color: #fff;
+}
+
+/* If text contains Safe */
+.result-badge:contains("Safe"),
+.result-box.safe .result-badge {
+    background: #28c76f; /* Green */
+    box-shadow: 0px 4px 12px rgba(40, 199, 111, 0.4);
+}
+
+/* If text contains Phishing */
+.result-badge:contains("Phishing"),
+.result-box.phishing .result-badge {
+    background: #ea5455; /* Red */
+    box-shadow: 0px 4px 12px rgba(234, 84, 85, 0.4);
 }
