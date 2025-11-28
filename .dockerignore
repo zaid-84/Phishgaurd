@@ -1,1 +1,30 @@
-docker build -t phishgaurd:local .
+# Ignore virtual environments
+env/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Windows executables
+*.exe
+chromedriver*
+
+# Large model files (optional to exclude — include ONLY if you want smaller Docker images)
+*.pkl
+
+# Screenshots / logs
+static/screenshots/*
+
+# Git metadata
+.git
+.gitignore
+
+# OS / editor files
+.DS_Store
+*.swp
+*.bak
+Thumbs.db
+
+# Pip cache
+pip-cache/
