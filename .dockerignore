@@ -1,10 +1,30 @@
+# Ignore virtual environments
 env/
 venv/
+
+# Python cache
 __pycache__/
 *.pyc
-*.pkl
+
+# Windows executables
 *.exe
-chromedriverold.exe
+chromedriver*
+
+# Ignore screenshots / logs
 static/screenshots/*
+
+# Git metadata
 .git
 .gitignore
+
+# OS / editor files
+.DS_Store
+*.swp
+*.bak
+Thumbs.db
+
+# Pip cache
+pip-cache/
+
+# Keep model files in the image — don't ignore .pkl here
+# If you have very large models you don't want in the image, remove this file from repo
